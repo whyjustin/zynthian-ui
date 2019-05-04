@@ -61,10 +61,12 @@ class zynthian_gui_selector:
 		self.status_peak_mA = None
 		self.status_peak_hA = None
 		self.status_hold_A = None
+		self.status_over_A = None
 		self.status_peak_lB = None
 		self.status_peak_mB = None
 		self.status_peak_hB = None
 		self.status_hold_B = None
+		self.status_over_B = None
 		self.status_error = None
 		self.status_recplay = None
 		self.status_midi = None
@@ -270,14 +272,14 @@ class zynthian_gui_selector:
 				try:
 					# Channel A (left)
 					if self.status_peak_lA:
-						self.status_canvas.coords(self.status_peak_lA,(0, 0, llA, self.status_rh/2))
+						self.status_canvas.coords(self.status_peak_lA,(0, 0, llA, self.status_rh/2 - 1))
 						self.status_canvas.itemconfig(self.status_peak_lA, state='normal')
 					else:
 						self.status_peak_lA=self.status_canvas.create_rectangle((0, 0, 0, 0), fill="#00C000", width=0, state='hidden')
 
 					if self.status_peak_mA:
 						if lmA >= self.dpm_scale_lm:
-							self.status_canvas.coords(self.status_peak_mA,(self.dpm_scale_lm, 0, lmA, self.status_rh/2))
+							self.status_canvas.coords(self.status_peak_mA,(self.dpm_scale_lm, 0, lmA, self.status_rh/2 - 1))
 							self.status_canvas.itemconfig(self.status_peak_mA, state="normal")
 						else:
 							self.status_canvas.itemconfig(self.status_peak_mA, state="hidden")
@@ -286,7 +288,7 @@ class zynthian_gui_selector:
 
 					if self.status_peak_hA:
 						if lhA >= self.dpm_scale_lh:
-							self.status_canvas.coords(self.status_peak_hA,(self.dpm_scale_lh, 0, lhA, self.status_rh/2))
+							self.status_canvas.coords(self.status_peak_hA,(self.dpm_scale_lh, 0, lhA, self.status_rh/2 - 1))
 							self.status_canvas.itemconfig(self.status_peak_hA, state="normal")
 						else:
 							self.status_canvas.itemconfig(self.status_peak_hA, state="hidden")
@@ -294,7 +296,7 @@ class zynthian_gui_selector:
 						self.status_peak_hA=self.status_canvas.create_rectangle((0, 0, 0, 0), fill="#C00000", width=0, state='hidden')
 
 					if self.status_hold_A:
-						self.status_canvas.coords(self.status_hold_A,(lholdA, 0, lholdA, self.status_rh/2))
+						self.status_canvas.coords(self.status_hold_A,(lholdA, 0, lholdA, self.status_rh/2 - 1))
 						if lholdA >= self.dpm_scale_lh:
 							self.status_canvas.itemconfig(self.status_hold_A, state="normal", fill="#FF0000")
 						elif lholdA >= self.dpm_scale_lm:
@@ -306,16 +308,24 @@ class zynthian_gui_selector:
 					else:
 						self.status_hold_A=self.status_canvas.create_rectangle((0, 0, 0, 0), width=0, state='hidden')
 
+					if self.status_over_A:
+						if(status['holdA'] == 0):
+							self.status_canvas.itemconfig(self.status_over_A, state="normal")
+						else:
+							self.status_canvas.itemconfig(self.status_over_A, state="hidden")
+					else:
+						self.status_over_A=self.status_canvas.create_rectangle((0, self.status_rh/2 - 1, self.status_l, self.status_rh/2), fill="#FF0000", width=0, state='hidden')
+					
 					# Channel B (right)
 					if self.status_peak_lB:
-						self.status_canvas.coords(self.status_peak_lB,(0, self.status_rh/2 + 1, llB, self.status_rh + 1))
+						self.status_canvas.coords(self.status_peak_lB,(0, self.status_rh/2 + 1, llB, self.status_rh))
 						self.status_canvas.itemconfig(self.status_peak_lB, state='normal')
 					else:
 						self.status_peak_lB=self.status_canvas.create_rectangle((0, 0, 0, 0), fill="#00C000", width=0, state='hidden')
 
 					if self.status_peak_mB:
 						if lmB >= self.dpm_scale_lm:
-							self.status_canvas.coords(self.status_peak_mB,(self.dpm_scale_lm, self.status_rh/2 + 1, lmB, self.status_rh + 1))
+							self.status_canvas.coords(self.status_peak_mB,(self.dpm_scale_lm, self.status_rh/2 + 1, lmB, self.status_rh))
 							self.status_canvas.itemconfig(self.status_peak_mB, state="normal")
 						else:
 							self.status_canvas.itemconfig(self.status_peak_mB, state="hidden")
@@ -324,7 +334,7 @@ class zynthian_gui_selector:
 
 					if self.status_peak_hB:
 						if lhB >= self.dpm_scale_lh:
-							self.status_canvas.coords(self.status_peak_hB,(self.dpm_scale_lh, self.status_rh/2 + 1, lhB, self.status_rh + 1))
+							self.status_canvas.coords(self.status_peak_hB,(self.dpm_scale_lh, self.status_rh/2 + 1, lhB, self.status_rh))
 							self.status_canvas.itemconfig(self.status_peak_hB, state="normal")
 						else:
 							self.status_canvas.itemconfig(self.status_peak_hB, state="hidden")
@@ -332,7 +342,7 @@ class zynthian_gui_selector:
 						self.status_peak_hB=self.status_canvas.create_rectangle((0, 0, 0, 0), fill="#C00000", width=0, state='hidden')
 
 					if self.status_hold_B:
-						self.status_canvas.coords(self.status_hold_B,(lholdB, self.status_rh/2 + 1, lholdB, self.status_rh + 1))
+						self.status_canvas.coords(self.status_hold_B,(lholdB, self.status_rh/2 + 1, lholdB, self.status_rh))
 						if lholdB >= self.dpm_scale_lh:
 							self.status_canvas.itemconfig(self.status_hold_B, state="normal", fill="#FF0000")
 						elif lholdB >= self.dpm_scale_lm:
@@ -344,6 +354,14 @@ class zynthian_gui_selector:
 					else:
 						self.status_hold_B=self.status_canvas.create_rectangle((0, 0, 0, 0), width=0, state='hidden')
 
+					if self.status_over_B:
+						if(status['holdB'] == 0):
+							self.status_canvas.itemconfig(self.status_over_B, state="normal")
+						else:
+							self.status_canvas.itemconfig(self.status_over_B, state="hidden")
+					else:
+						self.status_over_B=self.status_canvas.create_rectangle((0, self.status_rh/2, self.status_l, self.status_rh/2 + 1), fill="#FF0000", width=0, state='hidden')
+						
 				except Exception as e:
 					logging.error("%s" % e)
 
