@@ -207,8 +207,6 @@ else:
 
 if os.environ.get('DISPLAY_HEIGHT'):
 	display_height=int(os.environ.get('DISPLAY_HEIGHT'))
-	topbar_height=int(display_height/10)
-	ctrl_height=int((display_height-topbar_height)/2)
 else:
 	display_height=None
 
@@ -365,15 +363,14 @@ try:
 		ctrl_width = int(display_width/4)
 	if not display_height:
 		display_height = top.winfo_screenheight()
-		topbar_height = int(display_height/10)
-		ctrl_height = int((display_height-topbar_height)/2)
 except:
 	logging.warning("Can't get screen size. Using default 320x240!")
 	display_width = 320
 	display_height = 240
-	topbar_height = int(display_height/10)
-	ctrl_width = int(display_width/4)
-	ctrl_height = int((display_height-topbar_height)/2)
+
+topbar_height = int(display_height/8)
+ctrl_width = int(display_width/4)
+ctrl_height = int((display_height-topbar_height)/2)
 
 # Adjust font size, if not defined
 if not font_size:
