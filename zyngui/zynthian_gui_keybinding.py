@@ -46,10 +46,12 @@ class zynthian_gui_keybinding:
 	"""
 
 	modifiers = {
-		'shift': 1,
-		'caps': 2,
-		'ctrl': 4,
-		'alt': 8
+		'shift'	:	0x0001,
+		'caps'	:	0x0002,
+		'ctrl'	:	0x0004,
+		'alt'	:	0x0008,
+		'altgr'	:	0x0080,
+		'num'	:	0x0010
 	}
 
 	default_config = {
