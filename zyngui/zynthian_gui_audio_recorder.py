@@ -66,6 +66,12 @@ class zynthian_gui_audio_recorder(zynthian_gui_selector):
 		self.volume_zgui_ctrl = None
 
 
+	def hide(self):
+		super().hide()
+		if self.volume_zgui_ctrl:
+			self.volume_zgui_ctrl.hide()
+
+
 	def get_status(self):
 		status=None
 
@@ -93,6 +99,7 @@ class zynthian_gui_audio_recorder(zynthian_gui_selector):
 
 		if status=="PLAY" or status=="PLAY+REC":
 			self.list_data.append(("STOP_PLAYING",0,"Stop Playing"))
+			self.show_playing_volume()
 
 		if zynthian_gui_config.audio_play_loop:
 			self.list_data.append(("LOOP",0,"[x] Loop Play"))
@@ -172,20 +179,28 @@ class zynthian_gui_audio_recorder(zynthian_gui_selector):
 			#logging.info("COMMAND: %s" % cmd)
 			self.rec_proc=Popen(cmd.split(" "), stdout=PIPE, stderr=PIPE)
 			sleep(0.2)
-			check_output("echo play | jack_transport", shell=True)
+			self.zyngui.zyntransport.play()
 		except Exception as e:
 			logging.error("ERROR STARTING AUDIO RECORD: %s" % e)
 			self.zyngui.show_info("ERROR STARTING AUDIO RECORD:\n %s" % e)
 			self.zyngui.hide_info_timer(5000)
+
 		self.update_list()
 
 
 	def stop_recording(self):
 		logging.info("STOPPING AUDIO RECORD ...")
-		check_output("echo stop | jack_transport", shell=True)
-		self.rec_proc.communicate()
-		while zynconf.is_process_running("jack_capture"):
-			sleep(0.2)
+		try:
+			self.zyngui.zyntransport.pause()
+			self.rec_proc.communicate()
+			while zynconf.is_process_running("jack_capture"):
+				sleep(0.2)
+			self.rec_proc = None
+		except Exception as e:
+			logging.error("ERROR STOPPING AUDIO RECORD: %s" % e)
+			self.zyngui.show_info("ERROR STOPPING AUDIO RECORD:\n %s" % e)
+			self.zyngui.hide_info_timer(5000)
+
 		self.update_list()
 
 
@@ -218,9 +233,9 @@ class zynthian_gui_audio_recorder(zynthian_gui_selector):
 
 		try:
 			if zynthian_gui_config.audio_play_loop:
-				cmd="/usr/bin/mplayer -nogui -noconsolecontrols -nolirc -nojoystick -really-quiet -slave -loop 0 -ao jack -input file='{}' '{}'".format(self.mplayer_ctrl_fifo_path, fpath)
+				cmd="/usr/bin/mplayer -nogui -noconsolecontrols -nolirc -nojoystick -really-quiet -slave -loop 0 -ao jack -input file=\"{}\" \"{}\"".format(self.mplayer_ctrl_fifo_path, fpath)
 			else:
-				cmd="/usr/bin/mplayer -nogui -noconsolecontrols -nolirc -nojoystick -really-quiet -slave -ao jack -input file='{}' '{}'".format(self.mplayer_ctrl_fifo_path, fpath)
+				cmd="/usr/bin/mplayer -nogui -noconsolecontrols -nolirc -nojoystick -really-quiet -slave -ao jack -input file=\"{}\" \"{}\"".format(self.mplayer_ctrl_fifo_path, fpath)
 
 			logging.info("COMMAND: %s" % cmd)
 
@@ -232,8 +247,9 @@ class zynthian_gui_audio_recorder(zynthian_gui_selector):
 
 			thread = threading.Thread(target=runInThread, args=(self.end_playing, cmd), daemon=True)
 			thread.start()
+			sleep(0.5)
 			self.show_playing_volume()
-			sleep(0.2)
+			self.send_controller_value(self.volume_zctrl)
 			self.current_record=fpath
 
 		except Exception as e:
@@ -244,32 +260,30 @@ class zynthian_gui_audio_recorder(zynthian_gui_selector):
 		self.update_list()
 
 
-	def end_playing(self):
-		logging.info("ENDING AUDIO PLAY ...")
-		try:
-			self.mplayer_ctrl_fifo.close()
-			self.mplayer_ctrl_fifo = None
-		except:
-			pass
-		self.current_record=None
-		self.volume_zgui_ctrl.hide()
-		self.update_list()
-
-
 	def send_mplayer_command(self, cmd):
 		with open(self.mplayer_ctrl_fifo_path, "w") as f:
 			f.write(cmd + "\n")
 			f.close()
 
 
+	def end_playing(self):
+		logging.info("ENDING AUDIO PLAY ...")
+		self.play_proc = None
+		self.current_record=None
+		self.volume_zgui_ctrl.hide()
+		self.update_list()
+
+
 	def stop_playing(self):
 		logging.info("STOPPING AUDIO PLAY ...")
 		try:
 			self.send_mplayer_command("quit")
-			sleep(0.5)
-			self.play_proc.terminate()
-		except:
-			pass
+			while self.play_proc:
+				sleep(0.1)
+		except Exception as e:
+			logging.error("ERROR STOPPING AUDIO PLAY: %s" % e)
+			self.zyngui.show_info("ERROR STOPPING AUDIO PLAY:\n %s" % e)
+			self.zyngui.hide_info_timer(5000)
 
 
 	def show_playing_volume(self):
@@ -278,8 +292,6 @@ class zynthian_gui_audio_recorder(zynthian_gui_selector):
 			self.volume_zgui_ctrl.show()
 		else:
 			self.volume_zgui_ctrl = zynthian_gui_controller(2, self.main_frame, self.volume_zctrl)
-
-		self.send_controller_value(self.volume_zctrl)
 
 
 	# Implement engine's method
