@@ -226,6 +226,10 @@ class zynthian_engine_mixer(zynthian_engine):
 								ctrl_value = int(m.group(1))
 								if ctrl_type=="VToggle":
 									ctrl_item0 = 'on' if (ctrl_value>0) else 'off'
+				if ctrl_symbol and ctrl_type and (not self.ctrl_list or ctrl_name in self.ctrl_list) and (
+								not controller_filter or controller_filter is None or ctrl_name == controller_filter):
+					if ctrl_type in ("Selector", "Toggle", "VToggle") and len(ctrl_items) > 1:
+
 						#logging.debug("ADDING ZCTRL SELECTOR: {} => {}".format(ctrl_symbol, ctrl_item0))
 						
 						zctrl = zynthian_controller(self, ctrl_symbol, ctrl_name, {
