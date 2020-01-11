@@ -131,7 +131,7 @@ class zynthian_engine_mixer(zynthian_engine):
 	# Controllers Managament
 	#----------------------------------------------------------------------------
 
-	def get_controllers_dict(self, layer):
+	def get_controllers_dict(self, filter):
 		zctrls = OrderedDict()
 
 		logging.debug("MIXER CTRL LIST: {}".format(self.ctrl_list))
@@ -177,6 +177,8 @@ class zynthian_engine_mixer(zynthian_engine):
 						ctrl_caps = value.split(' ')
 						if 'enum' in ctrl_caps:
 							ctrl_type = "Selector"
+						elif 'volume' in ctrl_caps:
+							ctrl_type = "Playback"
 						elif 'pvolume' in ctrl_caps:
 							ctrl_type = "Playback"
 						elif 'cvolume' in ctrl_caps:
@@ -222,7 +224,7 @@ class zynthian_engine_mixer(zynthian_engine):
 								if ctrl_type=="VToggle":
 									ctrl_item0 = 'on' if (ctrl_value>0) else 'off'
 
-				if ctrl_symbol and ctrl_type and (not self.ctrl_list or ctrl_name in self.ctrl_list):
+				if ctrl_symbol and ctrl_type and (not self.ctrl_list or ctrl_name in self.ctrl_list) and (not filter or ctrl_name == filter):
 					if ctrl_type in ("Selector", "Toggle", "VToggle") and len(ctrl_items)>1:
 						#logging.debug("ADDING ZCTRL SELECTOR: {} => {}".format(ctrl_symbol, ctrl_item0))
 						
