@@ -131,8 +131,11 @@ class zynthian_engine_mixer(zynthian_engine):
 	# Controllers Managament
 	#----------------------------------------------------------------------------
 
-	def get_controllers_dict(self, controller_filter):
+	def get_controllers_dict(self, layer, controller_filter=None):
 		zctrls = OrderedDict()
+		if controller_filter=='***ALL***':
+			controller_filter = None
+			self.ctrl_list=[]
 
 		logging.debug("MIXER CTRL LIST: {}".format(self.ctrl_list))
 
@@ -223,9 +226,6 @@ class zynthian_engine_mixer(zynthian_engine):
 								ctrl_value = int(m.group(1))
 								if ctrl_type=="VToggle":
 									ctrl_item0 = 'on' if (ctrl_value>0) else 'off'
-
-				if ctrl_symbol and ctrl_type and (not self.ctrl_list or ctrl_name in self.ctrl_list) and (not controller_filter or ctrl_name == controller_filter):
-					if ctrl_type in ("Selector", "Toggle", "VToggle") and len(ctrl_items)>1:
 						#logging.debug("ADDING ZCTRL SELECTOR: {} => {}".format(ctrl_symbol, ctrl_item0))
 						
 						zctrl = zynthian_controller(self, ctrl_symbol, ctrl_name, {
@@ -424,7 +424,7 @@ class zynthian_engine_mixer(zynthian_engine):
 
 	@classmethod
 	def zynapi_get_controllers(cls, controller_filter=None):
-		return cls.zynapi_instance.get_controllers_dict(controller_filter)
+		return cls.zynapi_instance.get_controllers_dict(None, controller_filter)
 
 
 #******************************************************************************
