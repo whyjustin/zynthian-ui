@@ -423,8 +423,8 @@ class zynthian_engine_mixer(zynthian_engine):
 
 
 	@classmethod
-	def zynapi_get_controllers(cls):
-		return cls.zynapi_instance.get_controllers_dict(None)
+	def zynapi_get_controllers(cls, controller_filter=None):
+		return cls.zynapi_instance.get_controllers_dict(controller_filter)
 
 
 #******************************************************************************
